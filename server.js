@@ -55,16 +55,21 @@ app.post('/signup', (req, res) => {
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
 
-    db.query('SELECT * FROM users WHERE email = ? AND password = ?', [email, password], (err, result) => {
+    db.query('SELECT * FROM users WHERE email = ?', [email], (err, result) => {
         if (err) {
             res.status(500).send('Failed to log in');
             throw err;
         }
 
         if (result.length === 0) {
-            res.status(401).send('Invalid email or password');
+            res.status(404).send('User not found');
         } else {
-            res.status(200).send('Login successful');
+            const user = result[0];
+            if (user.password === password) {
+                res.status(200).send('Login successful');
+            } else {
+                res.status(401).send('User not authorized');
+            }
         }
     });
 });
